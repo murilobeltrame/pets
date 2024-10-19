@@ -9,9 +9,9 @@ export class PetsService {
   }
 
   async getPet(id: number): Promise<Pet | undefined> {
-    const pet = await Pet.findByPk(id);
-    if (pet === null) throw notFound;
-    return pet;
+    const foundPet = await Pet.findByPk(id);
+    if (foundPet === null) throw notFound;
+    return foundPet;
   }
 
   async createPet(pet: Pet): Promise<Pet> {
