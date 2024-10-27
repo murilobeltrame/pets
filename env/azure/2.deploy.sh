@@ -18,6 +18,6 @@ zip -r expressjs-app.zip ./dist
 # Deploy ExpressJS app to Azure Web App
 az webapp deployment source config-zip --name $webAppName \
     --resource-group $resourceGroupName \
-    --src-path ./expressjs-app.zip
+    --src ./expressjs-app.zip
 
 echo "Deployment completed successfully!"
