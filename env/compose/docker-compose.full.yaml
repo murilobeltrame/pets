@@ -1,0 +1,25 @@
+services:
+  api:
+    build:
+      context: ../../
+      dockerfile: Dockerfile
+    environment:
+      DB_NAME: Pets
+      DB_USER: Pets
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_HOST: db
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_PORT: 80
+    ports:
+      - 80:3000
+  db:
+    image: postgres:11-alpine
+    environment:
+      POSTGRES_USER: Pets
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - 5432:5432
+  adminer:
+    image: adminer
+    ports:
+      - 8080:8080
