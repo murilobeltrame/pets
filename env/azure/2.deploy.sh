@@ -13,11 +13,14 @@ read resourceGroupName
 # Build and package ExpressJS app
 npm install
 npm run build
-zip -r expressjs-app.zip ./dist
+pwd=$(pwd)
+cd ./dist
+zip -r expressjs-app.zip .
 
 # Deploy ExpressJS app to Azure Web App
 az webapp deployment source config-zip --name $webAppName \
     --resource-group $resourceGroupName \
     --src ./expressjs-app.zip
 
+cd $pwd
 echo "Deployment completed successfully!"
