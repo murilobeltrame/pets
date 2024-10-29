@@ -15,19 +15,27 @@ read pgadminusername
 echo "Please enter the password for the PostgreSQL server:"
 read -s pgadminpassword
 
-
 az group create --name $resourceGroupName --location $location
 
-webappName="$resourceGroupName-webapp"
-appServicePlanName="$resourceGroupName-appserviceplan"
+# Create an Azure Container Registry
+acrName=$(echo "$resourceGroupName-acr" | sed 's/[^a-zA-Z0-9]//g')
+acrSkU="Basic"
+az acr create --resource-group $resourceGroupName --name $acrName --admin-enabled true --sku $acrSkU
 
 # Create an App Service Plan
-az appservice plan create --name $appServicePlanName --resource-group $resourceGroupName --is-linux
+appServicePlanName="$resourceGroupName-appserviceplan"
+servicePlanSku="F1"
+az appservice plan create --name $appServicePlanName --resource-group $resourceGroupName --is-linux --sku $servicePlanSku
 
-# Create a Web App
-runtime="NODE:20-lts"
-
-az webapp create --name $webappName --resource-group $resourceGroupName --plan $appServicePlanName --runtime $runtime
+# Create a Web App that hosts containers from the Azure Container Registry
+webappName="$resourceGroupName-webapp"
+az webapp create --name $webappName \
+  --resource-group $resourceGroupName \
+  --plan $appServicePlanName \
+  --container-registry-url $(az acr show --name $acrName --resource-group $resourceGroupName --query "loginServer" -o tsv) \
+  --container-image-name $acrName/webapp:latest \
+  --container-registry-user $(az acr credential show --name $acrName --resource-group $resourceGroupName --query "username" -o tsv) \
+  --container-registry-password $(az acr credential show --name $acrName --resource-group $resourceGroupName --query "passwords[0].value" -o tsv)
 
 # Create PostgreSQL Database Server
 pgservername="$resourceGroupName-pgserver"

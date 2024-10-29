@@ -1,26 +1,28 @@
 #!/bin/bash
 
-# Define variables for Azure Web App and ExpressJS app
-webAppName=""
-resourceGroupName=""
+# Build and package ExpressJS app
+docker build -t webapp .
 
-echo "Please enter the web app name:"
-read webAppName
+# Define variables for Azure Container Registry
+acrName=""
+location=""
+resourceGroupName=""
 
 echo "Please enter the resource group name:"
 read resourceGroupName
 
-# Build and package ExpressJS app
-npm install
-npm run build
-pwd=$(pwd)
-cd ./dist
-zip -r expressjs-app.zip .
+echo "Please enter the container registry name:"
+read acrName
 
-# Deploy ExpressJS app to Azure Web App
-az webapp deployment source config-zip --name $webAppName \
-    --resource-group $resourceGroupName \
-    --src ./expressjs-app.zip
+echo "Please enter the location:"
+read location
 
-cd $pwd
-echo "Deployment completed successfully!"
+# Create Azure Container Registry
+az acr create --resource-group $resourceGroupName --name $acrName --sku Standard --location $location
+
+# Log in to Azure Container Registry
+docker login $acrName.azurecr.io
+
+# Tag and push Docker image to Azure Container Registry
+docker tag webapp $acrName.azurecr.io/webapp:latest
+docker push $acrName.azurecr.io/webapp:latest
